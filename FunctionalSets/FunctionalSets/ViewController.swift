@@ -12,7 +12,7 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        let set = FunctionalSet()
+        let set = IntegerFunctionalSet()
         
         set.contains({_ in true }, elem: 1)
         // Do any additional setup after loading the view, typically from a nib.

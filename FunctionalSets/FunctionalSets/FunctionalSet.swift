@@ -8,9 +8,10 @@
 
 import Foundation
 
-typealias FuncSet = (Int) -> (Bool)
-
-class FunctionalSet : NSObject {
+class FunctionalSet<T> : NSObject {
+    internal typealias FuncSet = (T) -> (Bool)
+    typealias FuncSetIndication = (T) -> (Bool)
+    typealias FuncSetTransform = (T) -> (T)
     /**
     * We represent a set by its characteristic function, i.e.
     * its `contains` predicate.
@@ -19,15 +20,15 @@ class FunctionalSet : NSObject {
     /**
     * Indicates whether a set contains a given element.
     */
-    func contains(s: FuncSet, elem: Int) -> Bool {
+    func contains(s: FuncSet, elem: T) -> Bool {
         return s(elem)
     }
     
     /**
     * Returns the set of the one given element.
     */
-    func singletonSet(elem: Int) -> FuncSet {
-        return { $0 == elem }
+    func singletonSet(elem: T) -> FuncSet {
+        return { _ in false }
     }
     
     /**
@@ -57,23 +58,45 @@ class FunctionalSet : NSObject {
     /**
     * Returns the subset of `s` for which `p` holds.
     */
-    func filter(s: FuncSet, p: (Int) -> (Bool)) -> FuncSet{
+    func filter(s: FuncSet, p: FuncSetIndication) -> FuncSet{
         return { self.contains(s, elem: $0) && p($0) }
     }
+}
 
+class EquatableFunctionalSet<T: Equatable> : FunctionalSet<T> {
+    override func singletonSet(elem: T) -> FuncSet {
+        return { $0 == elem }
+    }
+}
+
+class IntegerFunctionalSet : EquatableFunctionalSet<Int> {
+    typealias T = Int
     /**
     * The bounds for `forall` and `exists` are +/- 1000.
     */
+    
     let bound = 1000
     
     /**
     * Returns whether all bounded integers within `s` satisfy `p`.
     */
     
-    func forall(s: FuncSet, p: (Int) -> (Bool)) -> Bool {
-        var iter: (Int) -> (Bool) = { _ in false }
-        iter = {
-            a in
+    func forall(s: FuncSet, p: FuncSetIndication) -> Bool {
+//        var iter: (Int) -> (Bool) = { _ in false }
+//        iter = {
+//            a in
+//            if (abs(a) > self.bound) {
+//                return true
+//            }
+//            else if (self.contains(s,elem: a) && !self.filter(s, p: p)(a)) {
+//                return false
+//            }
+//            else {
+//                return iter(a + 1)
+//            }
+//        }
+//        return iter((-1)*bound)
+        func iter(a: T) -> Bool {
             if (abs(a) > self.bound) {
                 return true
             }
@@ -82,36 +105,24 @@ class FunctionalSet : NSObject {
             }
             else {
                 return iter(a + 1)
+//                return false
             }
         }
         return iter((-1)*bound)
-//        func iter(a: Int) -> Bool {
-//            if (abs(a) > self.bound) {
-//                return true
-//            }
-//            else if (self.contains(s,elem: a) && !self.filter(s, p: p)(a)) {
-//                return false
-//            }
-//            else {
-////                return iter(a + 1)
-//                return false
-//            }
-//        }
-//        iter((-1)*bound)
     }
     
     /**
     * Returns whether there exists a bounded integer within `s`
     * that satisfies `p`.
     */
-    func exists(s: FuncSet, p: (Int) -> (Bool)) -> Bool {
+    func exists(s: FuncSet, p: FuncSetIndication) -> Bool {
         return !self.forall(s, p: { !p($0) })
     }
     
     /**
     * Returns a set transformed by applying `f` to each element of `s`.
     */
-    func map(s: FuncSet, f: (Int) -> (Int)) -> FuncSet {
+    func map(s: FuncSet, f: FuncSetTransform) -> FuncSet {
         return { y in self.exists(s, p: { f($0) == y })}
     }
     
@@ -132,6 +143,6 @@ class FunctionalSet : NSObject {
     * Prints the contents of a set on the console.
     */
     func printSet(s: FuncSet) {
-        println(self.toString(s))
+        print(self.toString(s))
     }
 }
