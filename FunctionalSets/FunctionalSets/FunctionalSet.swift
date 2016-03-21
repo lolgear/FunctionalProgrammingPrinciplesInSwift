@@ -82,6 +82,7 @@ class IntegerFunctionalSet : EquatableFunctionalSet<Int> {
     */
     
     func forall(s: FuncSet, p: FuncSetIndication) -> Bool {
+        print("s has elements: \(self.toString(s))")
 //        var iter: (Int) -> (Bool) = { _ in false }
 //        iter = {
 //            a in
@@ -105,7 +106,6 @@ class IntegerFunctionalSet : EquatableFunctionalSet<Int> {
             }
             else {
                 return iter(a + 1)
-//                return false
             }
         }
         return iter((-1)*bound)
@@ -132,10 +132,7 @@ class IntegerFunctionalSet : EquatableFunctionalSet<Int> {
     func toString(s: FuncSet) -> String {
         
         let array = Array(-self.bound ... self.bound).filter { self.contains(s, elem: $0) }
-        let string =
-        array.reduce("", combine: { result, item in
-            result + ", \(item)"
-        })
+        let string = array.map { (g) in return "\(g)" }.joinWithSeparator(", ")
         return string
     }
     
